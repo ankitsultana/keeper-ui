@@ -8,10 +8,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @SpringBootApplication
 @RestController
+@CrossOrigin(origins = "*")
 public class KeeperUIApplication {
 
     private static final int DEFAULT_PORT = 12345;
@@ -45,7 +49,12 @@ public class KeeperUIApplication {
     public ResponseEntity<?> getPath(@RequestParam("path") String path) {
         try {
             byte[] data = zookeeperFacade.getNodeData(path);
-            return ResponseEntity.ok(new String(data));
+            Map<String, Object> jsonData = new HashMap<>();
+            String serialized = new String(data);
+            jsonData.put("data", serialized);
+            jsonData.put("stat", Map.of("dataLength", serialized.length()));
+            jsonData.put("children", Map.of("length", 0));
+            return ResponseEntity.ok(jsonData);
         } catch (KeeperException | InterruptedException e) {
             return ResponseEntity.badRequest().body("Error getting path: " + e.getMessage());
         }
