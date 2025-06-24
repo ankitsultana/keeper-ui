@@ -32,7 +32,7 @@ public class KeeperUIApplication {
     }
 
     @GetMapping("/ls")
-    public ResponseEntity<?> listPath(@RequestParam String path) {
+    public ResponseEntity<?> listPath(@RequestParam("path") String path) {
         try {
             List<String> children = zookeeperFacade.listChildren(path);
             return ResponseEntity.ok(children);
@@ -42,7 +42,7 @@ public class KeeperUIApplication {
     }
 
     @GetMapping("/get")
-    public ResponseEntity<?> getPath(@RequestParam String path) {
+    public ResponseEntity<?> getPath(@RequestParam("path") String path) {
         try {
             byte[] data = zookeeperFacade.getNodeData(path);
             return ResponseEntity.ok(new String(data));
@@ -52,7 +52,7 @@ public class KeeperUIApplication {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<?> createPath(@RequestParam String path, @RequestBody(required = false) String data) {
+    public ResponseEntity<?> createPath(@RequestParam("path") String path, @RequestBody(required = false) String data) {
         try {
             byte[] dataBytes = data != null ? data.getBytes() : new byte[0];
             String createdPath = zookeeperFacade.createNode(path, dataBytes, CreateMode.PERSISTENT);
@@ -63,7 +63,7 @@ public class KeeperUIApplication {
     }
 
     @DeleteMapping("/delete")
-    public ResponseEntity<?> deletePath(@RequestParam String path, @RequestParam(defaultValue = "-1") int version) {
+    public ResponseEntity<?> deletePath(@RequestParam("path") String path, @RequestParam(value = "version", defaultValue = "-1") int version) {
         try {
             zookeeperFacade.deleteNode(path, version);
             return ResponseEntity.ok("Deleted: " + path);
@@ -73,7 +73,7 @@ public class KeeperUIApplication {
     }
 
     @PostMapping("/set")
-    public ResponseEntity<?> setPath(@RequestParam String path, @RequestBody String data, @RequestParam(defaultValue = "-1") int version) {
+    public ResponseEntity<?> setPath(@RequestParam("path") String path, @RequestBody String data, @RequestParam(value = "version", defaultValue = "-1") int version) {
         try {
             zookeeperFacade.setNodeData(path, data.getBytes(), version);
             return ResponseEntity.ok("Updated: " + path);
