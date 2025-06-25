@@ -1,5 +1,8 @@
 package com.ankitsultana.keeper.ui;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.springframework.boot.SpringApplication;
@@ -17,7 +20,7 @@ import java.util.Map;
 @RestController
 @CrossOrigin(origins = "*")
 public class KeeperUIApplication {
-
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final int DEFAULT_PORT = 12345;
     private ZookeeperFacade zookeeperFacade;
 
@@ -39,7 +42,9 @@ public class KeeperUIApplication {
     public ResponseEntity<?> listPath(@RequestParam("path") String path) {
         try {
             List<String> children = zookeeperFacade.listChildren(path);
-            return ResponseEntity.ok(children);
+            Map<String, Object> result = new HashMap<>();
+            result.put("children", children);
+            return ResponseEntity.ok(result);
         } catch (KeeperException | InterruptedException e) {
             return ResponseEntity.badRequest().body("Error listing path: " + e.getMessage());
         }
@@ -61,12 +66,17 @@ public class KeeperUIApplication {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<?> createPath(@RequestParam("path") String path, @RequestBody(required = false) String data) {
+    public ResponseEntity<?> createPath(@RequestBody(required = false) String data) {
         try {
-            byte[] dataBytes = data != null ? data.getBytes() : new byte[0];
-            String createdPath = zookeeperFacade.createNode(path, dataBytes, CreateMode.PERSISTENT);
+            if (data == null) {
+                throw new IllegalArgumentException("Empty data");
+            }
+            Map<String, Object> mp = OBJECT_MAPPER.readValue(data, new TypeReference<>() {});
+            String path = (String) mp.get("path");
+            String data1 = (String) mp.get("data");
+            String createdPath = zookeeperFacade.createNode(path, data1.getBytes(StandardCharsets.UTF_8), CreateMode.PERSISTENT);
             return ResponseEntity.ok("Created: " + createdPath);
-        } catch (KeeperException | InterruptedException e) {
+        } catch (KeeperException | InterruptedException | JsonProcessingException e) {
             return ResponseEntity.badRequest().body("Error creating path: " + e.getMessage());
         }
     }

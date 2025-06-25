@@ -99,6 +99,17 @@ export const ZookeeperSidebar: React.FC<ZookeeperSidebarProps> = ({
     setTree(newTree);
   };
 
+  const handleNodeClick = (node: TreeNode) => {
+    onNodeSelect(node.path);
+  };
+
+  const handleToggleClick = (node: TreeNode, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (node.hasChildren) {
+      toggleNode(node.path);
+    }
+  };
+
   const createNode = async () => {
     if (!newNodeName.trim()) {
       toast({
@@ -161,27 +172,31 @@ export const ZookeeperSidebar: React.FC<ZookeeperSidebarProps> = ({
     return (
       <div key={node.path}>
         <SidebarMenuItem>
-          <SidebarMenuButton
-            onClick={() => {
-              onNodeSelect(node.path);
-              if (node.hasChildren) {
-                toggleNode(node.path);
-              }
-            }}
-            className={`w-full justify-start gap-2 ${isSelected ? 'bg-blue-100 text-blue-900' : 'hover:bg-slate-100'} transition-colors`}
-            style={{ paddingLeft: `${level * 12 + 8}px` }}
-          >
-            <div className="flex items-center gap-1 min-w-0 flex-1">
-              {node.hasChildren && (
-                <ChevronIcon className="h-4 w-4 shrink-0" />
-              )}
-              <Icon className="h-4 w-4 shrink-0 text-blue-600" />
-              <span className="truncate text-sm">{node.path === '/' ? 'root' : node.path.split('/').pop()}</span>
-            </div>
+          <div className="flex items-center w-full group/menu-item">
+            <SidebarMenuButton
+              onClick={() => handleNodeClick(node)}
+              className={`flex-1 justify-start ${isSelected ? 'bg-blue-100 text-blue-900' : 'hover:bg-slate-100'} transition-colors`}
+              style={{ paddingLeft: `${level * 12 + 8}px` }}
+            >
+              <div className="flex items-center gap-1 min-w-0 flex-1">
+                <div className="w-4 h-4 flex items-center justify-center shrink-0">
+                  {node.hasChildren && (
+                    <button
+                      onClick={(e) => handleToggleClick(node, e)}
+                      className="p-0 hover:bg-slate-200 rounded-sm transition-colors"
+                    >
+                      <ChevronIcon className="h-3 w-3" />
+                    </button>
+                  )}
+                </div>
+                <Icon className="h-4 w-4 shrink-0 text-blue-600" />
+                <span className="truncate text-sm">{node.path === '/' ? 'root' : node.path.split('/').pop()}</span>
+              </div>
+            </SidebarMenuButton>
             <Button
               size="sm"
               variant="ghost"
-              className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+              className="h-6 w-6 p-0 opacity-0 group-hover/menu-item:opacity-100 transition-opacity shrink-0"
               onClick={(e) => {
                 e.stopPropagation();
                 setSelectedParent(node.path);
@@ -190,7 +205,7 @@ export const ZookeeperSidebar: React.FC<ZookeeperSidebarProps> = ({
             >
               <Plus className="h-3 w-3" />
             </Button>
-          </SidebarMenuButton>
+          </div>
         </SidebarMenuItem>
         {node.expanded && node.children.map(child => renderTree(child, level + 1))}
       </div>
@@ -216,7 +231,7 @@ export const ZookeeperSidebar: React.FC<ZookeeperSidebarProps> = ({
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupContent>
-            <SidebarMenu className="group">
+            <SidebarMenu>
               {renderTree(tree)}
             </SidebarMenu>
           </SidebarGroupContent>
