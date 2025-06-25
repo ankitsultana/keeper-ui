@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.data.Stat;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.http.ResponseEntity;
@@ -54,15 +55,34 @@ public class KeeperUIApplication {
     public ResponseEntity<?> getPath(@RequestParam("path") String path) {
         try {
             byte[] data = zookeeperFacade.getNodeData(path);
+            org.apache.zookeeper.data.Stat stat = zookeeperFacade.getNodeStat(path);
+            List<String> children = zookeeperFacade.listChildren(path);
             Map<String, Object> jsonData = new HashMap<>();
             String serialized = new String(data);
             jsonData.put("data", serialized);
-            jsonData.put("stat", Map.of("dataLength", serialized.length()));
-            jsonData.put("children", Map.of("length", 0));
+            Map<String, Object> statMap = getStringObjectMap(stat);
+            jsonData.put("stat", statMap);
+            jsonData.put("children", children);
             return ResponseEntity.ok(jsonData);
         } catch (KeeperException | InterruptedException e) {
             return ResponseEntity.badRequest().body("Error getting path: " + e.getMessage());
         }
+    }
+
+    private static Map<String, Object> getStringObjectMap(Stat stat) {
+        Map<String, Object> statMap = new HashMap<>();
+        statMap.put("czxid", stat.getCzxid());
+        statMap.put("mzxid", stat.getMzxid());
+        statMap.put("ctime", stat.getCtime());
+        statMap.put("mtime", stat.getMtime());
+        statMap.put("version", stat.getVersion());
+        statMap.put("cversion", stat.getCversion());
+        statMap.put("aversion", stat.getAversion());
+        statMap.put("ephemeralOwner", stat.getEphemeralOwner());
+        statMap.put("dataLength", stat.getDataLength());
+        statMap.put("numChildren", stat.getNumChildren());
+        statMap.put("pzxid", stat.getPzxid());
+        return statMap;
     }
 
     @PostMapping("/create")

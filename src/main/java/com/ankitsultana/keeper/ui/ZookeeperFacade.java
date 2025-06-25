@@ -43,6 +43,10 @@ public class ZookeeperFacade {
         return zooKeeper.getData(path, new NoOpWatcher(), null);
     }
 
+    public Stat getNodeStat(String path) throws KeeperException, InterruptedException {
+        return zooKeeper.exists(path, new NoOpWatcher());
+    }
+
     public String createNode(String path, byte[] data, CreateMode createMode) throws KeeperException, InterruptedException {
         return zooKeeper.create(path, data, ZooDefs.Ids.OPEN_ACL_UNSAFE, createMode);
     }
