@@ -105,7 +105,9 @@ public class KeeperUIApplication {
             Map<String, Object> mp = OBJECT_MAPPER.readValue(data, new TypeReference<>() {});
             String path = (String) mp.get("path");
             String data1 = (String) mp.get("data");
-            String createdPath = zookeeperFacade.createNode(path, data1.getBytes(StandardCharsets.UTF_8), CreateMode.PERSISTENT);
+            boolean isEphemeral = Boolean.parseBoolean(String.valueOf(mp.getOrDefault("isEphemeral", "false")));
+            CreateMode mode = isEphemeral ? CreateMode.EPHEMERAL : CreateMode.PERSISTENT;
+            String createdPath = zookeeperFacade.createNode(path, data1.getBytes(StandardCharsets.UTF_8), mode);
             return ResponseEntity.ok("Created: " + createdPath);
         } catch (KeeperException | InterruptedException | JsonProcessingException e) {
             return ResponseEntity.badRequest().body("Error creating path: " + e.getMessage());
