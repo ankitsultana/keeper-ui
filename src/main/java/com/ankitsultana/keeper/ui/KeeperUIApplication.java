@@ -6,8 +6,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.data.Stat;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,14 +22,17 @@ import java.util.Map;
 @SpringBootApplication
 @RestController
 @CrossOrigin(origins = "*")
+@EnableConfigurationProperties(AppConfig.class)
 public class KeeperUIApplication {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-    private static final int DEFAULT_PORT = 12345;
     private ZookeeperFacade zookeeperFacade;
+    private final AppConfig appConfig;
 
-    public KeeperUIApplication() {
+    @Autowired
+    public KeeperUIApplication(AppConfig appConfig) {
+        this.appConfig = appConfig;
         try {
-            this.zookeeperFacade = new ZookeeperFacade();
+            this.zookeeperFacade = new ZookeeperFacade(appConfig.getZookeeper());
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException("Failed to initialize Zookeeper connection", e);
         }
@@ -35,7 +40,13 @@ public class KeeperUIApplication {
 
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(KeeperUIApplication.class);
-        app.setDefaultProperties(java.util.Map.of("server.port", String.valueOf(DEFAULT_PORT)));
+        
+        if (args.length > 0) {
+            app.setDefaultProperties(java.util.Map.of(
+                "spring.config.location", "file:" + args[0]
+            ));
+        }
+        
         app.run(args);
     }
 

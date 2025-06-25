@@ -8,9 +8,6 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 public class ZookeeperFacade {
-
-    private static final String ZOOKEEPER_HOST = "localhost:9180";
-    private static final int SESSION_TIMEOUT = 5000;
     
     private ZooKeeper zooKeeper;
     
@@ -20,10 +17,10 @@ public class ZookeeperFacade {
         }
     }
 
-    public ZookeeperFacade() throws IOException, InterruptedException {
+    public ZookeeperFacade(AppConfig.Zookeeper config) throws IOException, InterruptedException {
         CountDownLatch connectedSignal = new CountDownLatch(1);
         
-        zooKeeper = new ZooKeeper(ZOOKEEPER_HOST, SESSION_TIMEOUT, new Watcher() {
+        zooKeeper = new ZooKeeper(config.getHost(), config.getSessionTimeout(), new Watcher() {
             @Override
             public void process(WatchedEvent event) {
                 if (event.getState() == Event.KeeperState.SyncConnected) {
