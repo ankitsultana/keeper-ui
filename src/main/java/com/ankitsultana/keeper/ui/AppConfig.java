@@ -3,11 +3,14 @@ package com.ankitsultana.keeper.ui;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @ConfigurationProperties(prefix = "")
 public class AppConfig {
     
     private Server server = new Server();
-    private Zookeeper zookeeper = new Zookeeper();
+    private Map<String, ZookeeperInstance> zookeeper = new HashMap<>();
     
     public Server getServer() {
         return server;
@@ -17,11 +20,11 @@ public class AppConfig {
         this.server = server;
     }
     
-    public Zookeeper getZookeeper() {
+    public Map<String, ZookeeperInstance> getZookeeper() {
         return zookeeper;
     }
     
-    public void setZookeeper(Zookeeper zookeeper) {
+    public void setZookeeper(Map<String, ZookeeperInstance> zookeeper) {
         this.zookeeper = zookeeper;
     }
     
@@ -37,7 +40,7 @@ public class AppConfig {
         }
     }
     
-    public static class Zookeeper {
+    public static class ZookeeperInstance {
         private String host = "localhost:9180";
         private int sessionTimeout = 5000;
         

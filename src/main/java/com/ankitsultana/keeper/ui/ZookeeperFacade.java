@@ -17,7 +17,7 @@ public class ZookeeperFacade {
         }
     }
 
-    public ZookeeperFacade(AppConfig.Zookeeper config) throws IOException, InterruptedException {
+    public ZookeeperFacade(AppConfig.ZookeeperInstance config) throws IOException, InterruptedException {
         CountDownLatch connectedSignal = new CountDownLatch(1);
         
         zooKeeper = new ZooKeeper(config.getHost(), config.getSessionTimeout(), new Watcher() {

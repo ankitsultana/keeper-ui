@@ -2,5 +2,12 @@ server:
   port: 12345
 
 zookeeper:
-  host: localhost:9180
-  session-timeout: 5000
+  dev:
+    host: localhost:9180
+    session-timeout: 5000
+  prod:
+    host: prod-zk1:2181,prod-zk2:2181,prod-zk3:2181
+    session-timeout: 10000
+  local:
+    host: localhost:2181
+    session-timeout: 3000
