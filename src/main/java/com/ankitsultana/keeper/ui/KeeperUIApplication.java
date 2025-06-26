@@ -1,6 +1,5 @@
 package com.ankitsultana.keeper.ui;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.zookeeper.CreateMode;
@@ -36,13 +35,11 @@ public class KeeperUIApplication {
 
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(KeeperUIApplication.class);
-        
         if (args.length > 0) {
             app.setDefaultProperties(java.util.Map.of(
                 "spring.config.location", "file:" + args[0]
             ));
         }
-        
         app.run(args);
     }
 
@@ -55,7 +52,7 @@ public class KeeperUIApplication {
             result.put("children", children);
             return ResponseEntity.ok(result);
         } catch (KeeperException | InterruptedException | IOException e) {
-            return ResponseEntity.badRequest().body("Error listing path: " + e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("message", "Error listing path: " + e.getMessage()));
         }
     }
 
@@ -74,9 +71,50 @@ public class KeeperUIApplication {
             jsonData.put("children", children);
             return ResponseEntity.ok(jsonData);
         } catch (KeeperException | InterruptedException e) {
-            return ResponseEntity.badRequest().body("Error getting path: " + e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("message", "Error getting path: " + e.getMessage()));
         } catch (IOException e) {
-          throw new RuntimeException(e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    @PostMapping("/{instance}/create")
+    public ResponseEntity<?> createPath(@PathVariable("instance") String instance, @RequestBody(required = false) String data) {
+        try {
+            if (data == null) {
+                throw new IllegalArgumentException("Empty data");
+            }
+            Map<String, Object> mp = OBJECT_MAPPER.readValue(data, new TypeReference<>() {});
+            String path = (String) mp.get("path");
+            String data1 = (String) mp.get("data");
+            boolean isEphemeral = Boolean.parseBoolean(String.valueOf(mp.getOrDefault("isEphemeral", "false")));
+            CreateMode mode = isEphemeral ? CreateMode.EPHEMERAL : CreateMode.PERSISTENT;
+            ZookeeperFacade zookeeperFacade = zookeeperFactory.getZookeeperFacade(instance);
+            String createdPath = zookeeperFacade.createNode(path, data1.getBytes(StandardCharsets.UTF_8), mode);
+            return ResponseEntity.ok(Map.of("message", "Created: " + createdPath));
+        } catch (KeeperException | InterruptedException | IOException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Error creating path: " + e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/{instance}/delete")
+    public ResponseEntity<?> deletePath(@PathVariable("instance") String instance, @RequestParam("path") String path, @RequestParam(value = "version", defaultValue = "-1") int version) {
+        try {
+            ZookeeperFacade zookeeperFacade = zookeeperFactory.getZookeeperFacade(instance);
+            zookeeperFacade.deleteNode(path, version);
+            return ResponseEntity.ok(Map.of("message", "Deleted: " + path));
+        } catch (KeeperException | InterruptedException | IOException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Error deleting path: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/{instance}/set")
+    public ResponseEntity<?> setPath(@PathVariable("instance") String instance, @RequestParam("path") String path, @RequestBody String data, @RequestParam(value = "version", defaultValue = "-1") int version) {
+        try {
+            ZookeeperFacade zookeeperFacade = zookeeperFactory.getZookeeperFacade(instance);
+            zookeeperFacade.setNodeData(path, data.getBytes(), version);
+            return ResponseEntity.ok(Map.of("message", "Updated: " + path));
+        } catch (KeeperException | InterruptedException | IOException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Error setting path: " + e.getMessage()));
         }
     }
 
@@ -94,46 +132,5 @@ public class KeeperUIApplication {
         statMap.put("numChildren", stat.getNumChildren());
         statMap.put("pzxid", stat.getPzxid());
         return statMap;
-    }
-
-    @PostMapping("/{instance}/create")
-    public ResponseEntity<?> createPath(@PathVariable("instance") String instance, @RequestBody(required = false) String data) {
-        try {
-            if (data == null) {
-                throw new IllegalArgumentException("Empty data");
-            }
-            Map<String, Object> mp = OBJECT_MAPPER.readValue(data, new TypeReference<>() {});
-            String path = (String) mp.get("path");
-            String data1 = (String) mp.get("data");
-            boolean isEphemeral = Boolean.parseBoolean(String.valueOf(mp.getOrDefault("isEphemeral", "false")));
-            CreateMode mode = isEphemeral ? CreateMode.EPHEMERAL : CreateMode.PERSISTENT;
-            ZookeeperFacade zookeeperFacade = zookeeperFactory.getZookeeperFacade(instance);
-            String createdPath = zookeeperFacade.createNode(path, data1.getBytes(StandardCharsets.UTF_8), mode);
-            return ResponseEntity.ok("Created: " + createdPath);
-        } catch (KeeperException | InterruptedException | IOException e) {
-            return ResponseEntity.badRequest().body("Error creating path: " + e.getMessage());
-        }
-    }
-
-    @DeleteMapping("/{instance}/delete")
-    public ResponseEntity<?> deletePath(@PathVariable("instance") String instance, @RequestParam("path") String path, @RequestParam(value = "version", defaultValue = "-1") int version) {
-        try {
-            ZookeeperFacade zookeeperFacade = zookeeperFactory.getZookeeperFacade(instance);
-            zookeeperFacade.deleteNode(path, version);
-            return ResponseEntity.ok("Deleted: " + path);
-        } catch (KeeperException | InterruptedException | IOException e) {
-            return ResponseEntity.badRequest().body("Error deleting path: " + e.getMessage());
-        }
-    }
-
-    @PostMapping("/{instance}/set")
-    public ResponseEntity<?> setPath(@PathVariable("instance") String instance, @RequestParam("path") String path, @RequestBody String data, @RequestParam(value = "version", defaultValue = "-1") int version) {
-        try {
-            ZookeeperFacade zookeeperFacade = zookeeperFactory.getZookeeperFacade(instance);
-            zookeeperFacade.setNodeData(path, data.getBytes(), version);
-            return ResponseEntity.ok("Updated: " + path);
-        } catch (KeeperException | InterruptedException | IOException e) {
-            return ResponseEntity.badRequest().body("Error setting path: " + e.getMessage());
-        }
     }
 }

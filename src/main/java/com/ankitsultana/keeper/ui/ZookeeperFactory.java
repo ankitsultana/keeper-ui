@@ -25,7 +25,6 @@ public class ZookeeperFactory {
         if (config == null) {
             throw new IllegalArgumentException("Unknown ZooKeeper instance: " + instanceName);
         }
-        
         try {
             return new ZookeeperFacade(config);
         } catch (IOException | InterruptedException e) {
