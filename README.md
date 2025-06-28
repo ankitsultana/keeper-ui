@@ -26,7 +26,7 @@ All endpoints are prefixed with `/{instance}` where `instance` is the configured
 
 ### Prerequisites
 
-- Java 21 or higher
+- Java 11 or higher
 - Maven 3.6+
 - Access to a ZooKeeper cluster
 
