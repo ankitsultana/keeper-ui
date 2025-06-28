@@ -50,6 +50,17 @@ java -jar target/keeper-ui-1.0-SNAPSHOT.jar /path/to/your/application.yml
 
 The server will start on port 12345 by default.
 
+### Keeper UI Integration
+
+#### Using zk.ankitsultana.com
+
+Once your HTTP Proxy is up and able to connect to your Zookeeper instance (see Configuration section below), you can
+go to zk.ankitsultana.com to browse your Zookeeper instance's contents.
+
+#### Running UI Locally
+
+You can also run the frontend locally by using the submodule under the `app` folder. Simply run `npm install` and `npm run dev`.
+
 ## Configuration
 
 Create an `application.yml` file to configure the server and ZooKeeper instances:
@@ -133,12 +144,6 @@ src/main/java/com/ankitsultana/keeper/ui/
 ├── ZookeeperFacade.java       # ZooKeeper client wrapper
 ├── ZookeeperFactory.java      # Multi-instance connection factory
 └── AppConfig.java             # Configuration binding
-```
-
-### Running in Development
-
-```bash
-mvn spring-boot:run
 ```
 
 ## Credits
