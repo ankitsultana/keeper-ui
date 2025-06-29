@@ -1,16 +1,21 @@
-# Keeper UI - ZooKeeper HTTP Proxy
+# Keeper UI - ZooKeeper UI and HTTP Proxy
 
 **⚠️ Experimental Project**
 
-Keeper UI is an HTTP proxy server for Apache ZooKeeper that provides RESTful APIs to interact with ZooKeeper clusters. This project serves as the backend for the ZooKeeper UI hosted at https://zk.ankitsultana.com.
+Keeper UI is a complete UI and an HTTP proxy server for Apache ZooKeeper. You can check out a deployed version of the frontend at https://zk.ankitsultana.com.
 
 ## Features
 
 - **Multi-Instance Support**: Connect to multiple ZooKeeper clusters simultaneously
-- **RESTful APIs**: Complete CRUD operations for ZooKeeper nodes
+- **RESTful HTTP Proxy**: Complete CRUD operations for ZooKeeper nodes
 - **Node Statistics**: Retrieve detailed ZooKeeper node metadata
 - **Ephemeral & Persistent Nodes**: Support for both node types
 - **Configurable**: YAML-based configuration for easy deployment
+
+## Architecture
+
+<img src="https://github.com/ankitsultana/zookeeper-explorer-ui-plus/blob/main/public/lovable-uploads/e8d79631-97cb-4a44-a5ad-061f34ad3c05.png?raw=true" width=500>
+
 
 ## API Endpoints
 
@@ -38,17 +43,21 @@ mvn clean package
 
 ### Running
 
+Make sure you have a ZK cluster running and configured in the `application.yml` file.
+
 #### With default configuration
+
 ```bash
 java -jar target/keeper-ui-1.0-SNAPSHOT.jar
 ```
 
 #### With custom configuration
+
 ```bash
 java -jar target/keeper-ui-1.0-SNAPSHOT.jar /path/to/your/application.yml
 ```
 
-The server will start on port 12345 by default.
+The HTTP Proxy server will start on port 12345 by default. Next, you can spin up the Keeper UI or simply use the one hosted at https://zk.ankitsultana.com/
 
 ### Keeper UI Integration
 
